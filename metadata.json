@@ -1,0 +1,6 @@
+{
+  "name": "Finbazaar",
+  "description": "Wealth management app tracking investments, budget goals, secure bank sync, SBI Life policy schemes, and live financial market intelligence.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

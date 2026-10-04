@@ -1,0 +1,130 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #09090b;
+    background-image: 
+      radial-gradient(at 10% 15%, rgba(245, 158, 11, 0.22) 0px, transparent 45%),
+      radial-gradient(at 88% 12%, rgba(2, 132, 199, 0.22) 0px, transparent 45%),
+      radial-gradient(at 50% 45%, rgba(225, 29, 72, 0.16) 0px, transparent 50%),
+      radial-gradient(at 12% 85%, rgba(16, 185, 129, 0.20) 0px, transparent 48%),
+      radial-gradient(at 85% 85%, rgba(147, 51, 234, 0.20) 0px, transparent 48%),
+      radial-gradient(at 50% 95%, rgba(217, 119, 6, 0.18) 0px, transparent 40%);
+    background-attachment: fixed;
+    background-size: 100% 100%;
+  }
+}
+
+/* Custom CSS Keyframe Animations for Ants, Birds, and Rain */
+@keyframes rainFall {
+  0% {
+    transform: translateY(-20px) translateX(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(160px) translateX(-30px);
+    opacity: 0;
+  }
+}
+
+@keyframes birdWingFlutter {
+  0%, 100% {
+    transform: rotate(0deg) scaleY(1);
+  }
+  50% {
+    transform: rotate(-12deg) scaleY(0.7);
+  }
+}
+
+@keyframes grainGlowPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 2px rgba(251, 191, 36, 0.7));
+    opacity: 0.85;
+  }
+  50% {
+    filter: drop-shadow(0 0 7px rgba(245, 158, 11, 1));
+    opacity: 1;
+  }
+}
+
+@keyframes antMarchBob {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes multicolorShift {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    filter: hue-rotate(25deg);
+  }
+  100% {
+    filter: hue-rotate(0deg);
+  }
+}
+
+.animate-rain-fall {
+  animation: rainFall 1.8s linear infinite;
+}
+
+.animate-wing-flutter {
+  transform-origin: 55px 75px;
+  animation: birdWingFlutter 0.35s ease-in-out infinite;
+}
+
+.animate-grain-glow {
+  animation: grainGlowPulse 2.5s ease-in-out infinite;
+}
+
+.animate-ant-bob {
+  animation: antMarchBob 0.6s ease-in-out infinite;
+}
+
+.animate-multicolor-aurora {
+  animation: multicolorShift 12s ease-in-out infinite;
+}
+
+/* Rich Multicolor Utility Classes */
+.bg-multicolor-mesh {
+  background: linear-gradient(135deg, 
+    rgba(245, 158, 11, 0.12) 0%, 
+    rgba(225, 29, 72, 0.10) 25%, 
+    rgba(147, 51, 234, 0.10) 50%, 
+    rgba(2, 132, 199, 0.10) 75%, 
+    rgba(16, 185, 129, 0.12) 100%
+  );
+}
+
+.multicolor-card {
+  background: linear-gradient(135deg, rgba(28, 25, 23, 0.82) 0%, rgba(15, 23, 42, 0.88) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.30);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6), 0 0 25px -5px rgba(245, 158, 11, 0.15);
+  backdrop-filter: blur(16px);
+}
+
+.multicolor-glow-gold {
+  box-shadow: 0 0 35px -5px rgba(245, 158, 11, 0.35);
+}
+
+.multicolor-glow-teal {
+  box-shadow: 0 0 35px -5px rgba(13, 148, 136, 0.35);
+}
+
+.multicolor-glow-rose {
+  box-shadow: 0 0 35px -5px rgba(225, 29, 72, 0.35);
+}
+
+.multicolor-glow-purple {
+  box-shadow: 0 0 35px -5px rgba(147, 51, 234, 0.35);
+}
