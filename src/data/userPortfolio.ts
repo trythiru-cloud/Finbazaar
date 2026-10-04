@@ -51,9 +51,9 @@ export interface BankAccount {
 }
 
 export const INITIAL_USER_PROFILE: UserProfile = {
-  name: 'Investor Profile',
+  name: 'Thirumalai N',
   email: 'trythiru@gmail.com',
-  mobile: '+91 99942 98989',
+  mobile: '+91 98401 23456',
   location: 'Chennai, Tamil Nadu',
   panNumber: 'ABCDE1234F',
   kycVerified: true,

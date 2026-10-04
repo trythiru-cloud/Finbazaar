@@ -10,15 +10,31 @@ import {
   Percent, 
   Layers, 
   HeartHandshake,
-  DollarSign
+  DollarSign,
+  Download,
+  UserCheck,
+  Lock
 } from 'lucide-react';
 import { SuryaMandalaMotif, PadmaLotusMotif, MayilPeacockMotif, AshtalakshmiStarMotif, KalashUrnMotif } from './RangoliMotifs.tsx';
+import { UserProfile } from '../data/userPortfolio.ts';
 
 interface FinancialPlannerInsightsProps {
   onOpenEnquiry: (schemeId?: string) => void;
+  userProfile?: UserProfile;
+  lastSyncedAt?: string;
+  onRefreshUserData?: () => Promise<void> | void;
+  onExportUserData?: () => void;
+  isRefreshingUserData?: boolean;
 }
 
-export const FinancialPlannerInsights: React.FC<FinancialPlannerInsightsProps> = ({ onOpenEnquiry }) => {
+export const FinancialPlannerInsights: React.FC<FinancialPlannerInsightsProps> = ({ 
+  onOpenEnquiry,
+  userProfile,
+  lastSyncedAt,
+  onRefreshUserData,
+  onExportUserData,
+  isRefreshingUserData = false
+}) => {
   const [loading, setLoading] = useState(false);
   const [insights, setInsights] = useState<any>({
     healthScore: 84,
@@ -72,6 +88,67 @@ export const FinancialPlannerInsights: React.FC<FinancialPlannerInsightsProps> =
   return (
     <div className="space-y-6">
       
+      {/* Synchronous User Details & Data Portability Panel (Placed next to AI Planner) */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-stone-950 via-stone-900 to-amber-950/30 border border-teal-500/30 flex flex-wrap items-center justify-between gap-4 shadow-xl">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 shrink-0">
+            <UserCheck className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-stone-100">Synchronous Wealth & Portfolio Intelligence</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Synchronous: Live
+              </span>
+              <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-teal-500/10 text-teal-300 border border-teal-500/20">
+                DPDP & GDPR Verified
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-[11px] text-stone-400 mt-0.5">
+              <span className="text-stone-200 font-semibold">{userProfile?.name || 'Thirumalai N'}</span>
+              <span>•</span>
+              <span className="inline-flex items-center gap-1 bg-stone-950 px-2 py-0.5 rounded-lg border border-stone-800 text-[10px]">
+                <span className="text-stone-400">Mobile:</span>
+                <span className="font-mono text-amber-300 font-bold">{userProfile?.mobile || '+91 98401 23456'}</span>
+              </span>
+              <span>•</span>
+              <span>{userProfile?.location || 'Chennai, Tamil Nadu'}</span>
+              <span>•</span>
+              <span className="text-stone-500 font-mono">
+                Last Synced: {new Date(lastSyncedAt || Date.now()).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Refresh and Export Options Placed Next to AI Planner */}
+        <div className="flex items-center gap-2">
+          {onRefreshUserData && (
+            <button
+              onClick={onRefreshUserData}
+              disabled={isRefreshingUserData}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-stone-200 bg-stone-900 hover:bg-stone-800 border border-stone-700 hover:border-amber-400/50 transition-all disabled:opacity-50"
+              title="Synchronously Refresh User Details"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-teal-400 ${isRefreshingUserData ? 'animate-spin text-amber-400' : ''}`} />
+              <span>{isRefreshingUserData ? 'Refreshing...' : 'Refresh User Data'}</span>
+            </button>
+          )}
+
+          {onExportUserData && (
+            <button
+              onClick={onExportUserData}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-black bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 transition-all shadow-md shadow-amber-400/20"
+              title="Export User Data (GDPR & DPDP Act Compliant)"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Export User Data (GDPR/DPDP)</span>
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Top Banner with Health Score */}
       <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-stone-900 via-stone-900 to-amber-950/40 border border-amber-500/30 shadow-2xl relative overflow-hidden">
         

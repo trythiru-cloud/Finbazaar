@@ -14,28 +14,60 @@ import {
   Wheat,
   Feather,
   Building2,
-  HeartHandshake
+  HeartHandshake,
+  User,
+  Phone,
+  Layers,
+  AlertCircle
 } from 'lucide-react';
 import { SBI_SCHEMES, SbiScheme } from '../data/sbiSchemes.ts';
+import { UserProfile } from '../data/userPortfolio.ts';
 
 interface AiAntExplainerModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialSchemeId?: string;
-  onSelectSchemeForEnquiry?: (scheme: SbiScheme) => void;
+  onSelectSchemeForEnquiry?: (scheme: SbiScheme, userDetails?: { name: string; mobile: string }) => void;
+  userProfile?: UserProfile;
 }
 
 export const AiAntExplainerModal: React.FC<AiAntExplainerModalProps> = ({
   isOpen,
   onClose,
   initialSchemeId,
-  onSelectSchemeForEnquiry
+  onSelectSchemeForEnquiry,
+  userProfile
 }) => {
   const [selectedSchemeId, setSelectedSchemeId] = useState<string>(initialSchemeId || 'sbi-smart-champ');
   const [userQuery, setUserQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [explanationData, setExplanationData] = useState<any>(null);
+
+  // User name and mobile number to be captured while using ant chant AI
+  const [userName, setUserName] = useState<string>(userProfile?.name || 'Thirumalai N');
+  const [mobile, setMobile] = useState<string>(userProfile?.mobile || '+91 98401 23456');
+  const [mobileError, setMobileError] = useState<string | null>(null);
+  const [capturedLeadNotification, setCapturedLeadNotification] = useState<string | null>(null);
+
+  // Sync userProfile when prop updates
+  useEffect(() => {
+    if (userProfile?.name) setUserName(userProfile.name);
+    if (userProfile?.mobile && !userProfile.mobile.replace(/\D/g, '').endsWith('9994298989')) {
+      setMobile(userProfile.mobile);
+    }
+  }, [userProfile]);
+
+  const validateMobile = (num: string): string | null => {
+    const cleanDigits = num.replace(/\D/g, '');
+    if (cleanDigits === '9994298989' || cleanDigits === '919994298989' || cleanDigits.endsWith('9994298989')) {
+      return 'Validation Error: Mobile number 9994298989 is reserved for official advisor hotline and cannot be saved as your user mobile.';
+    }
+    if (cleanDigits.length < 10) {
+      return 'Please enter a valid 10-digit personal mobile number.';
+    }
+    return null;
+  };
 
   // Sync initialSchemeId when modal opens
   useEffect(() => {
@@ -53,6 +85,13 @@ export const AiAntExplainerModal: React.FC<AiAntExplainerModalProps> = ({
       setIsSpeaking(false);
     }
 
+    const err = validateMobile(mobile);
+    if (err) {
+      setMobileError(err);
+    }
+    const cleanDigits = mobile.replace(/\D/g, '');
+    const isMobileValid = cleanDigits.length >= 10 && cleanDigits !== '9994298989' && !cleanDigits.endsWith('9994298989');
+
     try {
       const activeScheme = SBI_SCHEMES.find(s => s.id === schemeId);
       const res = await fetch('/api/ai-ant-explain', {
@@ -61,12 +100,18 @@ export const AiAntExplainerModal: React.FC<AiAntExplainerModalProps> = ({
         body: JSON.stringify({
           schemeId,
           category: activeScheme?.category || 'general',
-          userQuestion: customQuestion || ''
+          userQuestion: customQuestion || '',
+          userName: userName.trim(),
+          userMobile: isMobileValid ? mobile.trim() : (userProfile?.mobile || '+91 98401 23456'),
+          location: userProfile?.location || 'Chennai, Tamil Nadu'
         })
       });
       const data = await res.json();
       if (data && data.success) {
         setExplanationData(data);
+        if (data.capturedLeadId) {
+          setCapturedLeadNotification(`User ${userName} (${isMobileValid ? mobile : userProfile?.mobile}) synchronously captured under Lead #${data.capturedLeadId}`);
+        }
       }
     } catch (err) {
       console.error('Failed to fetch AI Ant explanation:', err);
@@ -116,11 +161,23 @@ export const AiAntExplainerModal: React.FC<AiAntExplainerModalProps> = ({
   const handleAskCustom = (e: React.FormEvent) => {
     e.preventDefault();
     if (!userQuery.trim()) return;
+    const err = validateMobile(mobile);
+    if (err) {
+      setMobileError(err);
+      return;
+    }
+    setMobileError(null);
     fetchExplanation(selectedSchemeId, userQuery);
     setUserQuery('');
   };
 
   const handleQuickQuestionClick = (q: string) => {
+    const err = validateMobile(mobile);
+    if (err) {
+      setMobileError(err);
+      return;
+    }
+    setMobileError(null);
     fetchExplanation(selectedSchemeId, q);
   };
 
@@ -227,6 +284,77 @@ export const AiAntExplainerModal: React.FC<AiAntExplainerModalProps> = ({
                 );
               })}
             </div>
+          </div>
+
+          {/* User Name & Mobile Number Captured While Using Ant Chant AI */}
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-950/40 via-stone-900 to-teal-950/40 border border-amber-500/30 space-y-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-xs font-bold text-amber-300 uppercase tracking-wide">
+                  Applicant Details Captured for Ant Chant AI Consultation:
+                </span>
+              </div>
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <Layers className="w-3 h-3" />
+                <span>Synchronous Lead Active</span>
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Captured Name Input */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider flex items-center gap-1">
+                  <User className="w-3 h-3 text-teal-400" />
+                  <span>Applicant Legal Name</span>
+                </label>
+                <input
+                  type="text"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  placeholder="Enter applicant name"
+                  className="w-full bg-stone-950 border border-stone-800 focus:border-amber-400 rounded-xl px-3 py-1.5 text-xs text-stone-100 placeholder-stone-600 focus:outline-none font-medium"
+                />
+              </div>
+
+              {/* Captured Mobile Input */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center">
+                  <label className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider flex items-center gap-1">
+                    <Phone className="w-3 h-3 text-amber-400" />
+                    <span>Personal Mobile Number</span>
+                  </label>
+                  <span className="text-[9px] text-stone-500 font-mono">*Cannot save 9994298989</span>
+                </div>
+                <input
+                  type="text"
+                  value={mobile}
+                  onChange={(e) => {
+                    setMobile(e.target.value);
+                    const err = validateMobile(e.target.value);
+                    setMobileError(err);
+                  }}
+                  placeholder="+91 98401 23456"
+                  className={`w-full bg-stone-950 border rounded-xl px-3 py-1.5 text-xs font-mono text-stone-100 placeholder-stone-600 focus:outline-none ${
+                    mobileError ? 'border-rose-500 focus:border-rose-400' : 'border-stone-800 focus:border-amber-400'
+                  }`}
+                />
+              </div>
+            </div>
+
+            {mobileError && (
+              <div className="flex items-center gap-1.5 text-[11px] text-rose-400 font-medium">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{mobileError}</span>
+              </div>
+            )}
+
+            {capturedLeadNotification && !mobileError && (
+              <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-medium bg-emerald-950/30 border border-emerald-500/20 px-3 py-1 rounded-xl">
+                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                <span>{capturedLeadNotification}</span>
+              </div>
+            )}
           </div>
 
           {/* 2. Interactive AI Ant Presentation Card */}
@@ -424,8 +552,13 @@ export const AiAntExplainerModal: React.FC<AiAntExplainerModalProps> = ({
 
                   <button
                     onClick={() => {
+                      const err = validateMobile(mobile);
+                      if (err) {
+                        setMobileError(err);
+                        return;
+                      }
                       if (onSelectSchemeForEnquiry) {
-                        onSelectSchemeForEnquiry(currentScheme);
+                        onSelectSchemeForEnquiry(currentScheme, { name: userName, mobile });
                       }
                       onClose();
                     }}

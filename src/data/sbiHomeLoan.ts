@@ -3,7 +3,7 @@ export interface SbiHomeLoanProduct {
   name: string;
   category: 'Regular' | 'Overdraft' | 'Government' | 'Defence' | 'Top-Up' | 'Plot';
   tagline: string;
-  minInterestRate: string;
+  rateBenchmark: string;
   maxTenure: string;
   maxLoanAmount: string;
   processingFee: string;
@@ -19,14 +19,14 @@ export const SBI_HOME_LOAN_PRODUCTS: SbiHomeLoanProduct[] = [
     id: 'sbi-regular-homeloan',
     name: 'SBI Regular Home Loan',
     category: 'Regular',
-    tagline: 'India’s Most Trusted Home Loan with Lowest Rates & Zero Hidden Charges',
-    minInterestRate: '8.50% p.a. (EBLR linked)',
+    tagline: 'India’s Most Trusted Home Loan with Transparent Terms & Zero Hidden Charges',
+    rateBenchmark: 'Sovereign Floating Benchmark',
     maxTenure: 'Up to 30 Years',
     maxLoanAmount: 'Up to 90% of Property Cost',
     processingFee: '0.17% to 0.35% (Max ₹10,000 + GST)',
-    womenConcession: '5 bps (0.05%) special concession for women borrowers',
+    womenConcession: 'Special concession for women borrowers per SBI guidelines',
     keyFeatures: [
-      'Interest calculation on daily reducing balance.',
+      'Repayment calculated on daily reducing balance.',
       'Overdraft facility option available via SBI Maxgain.',
       'Zero prepayment penalty on floating rate loans.',
       'Repayment tenure up to 30 years (or up to 70 years of age).',
@@ -49,11 +49,11 @@ export const SBI_HOME_LOAN_PRODUCTS: SbiHomeLoanProduct[] = [
     name: 'SBI Maxgain Home Loan (Overdraft)',
     category: 'Overdraft',
     tagline: 'Park Surplus Funds in Overdraft to Drastically Reduce Interest While Retaining Liquidity',
-    minInterestRate: '8.75% p.a.',
+    rateBenchmark: 'Maxgain Overdraft Facility',
     maxTenure: 'Up to 30 Years',
     maxLoanAmount: 'Minimum ₹20 Lakhs (No Upper Cap)',
     processingFee: '0.35% of loan amount',
-    womenConcession: 'Applicable 0.05% concession',
+    womenConcession: 'Special concession for women co-applicants',
     keyFeatures: [
       'Home loan granted as an Overdraft account connected to current/savings.',
       'Every rupee deposited in Maxgain account reduces your principal interest calculation.',
@@ -68,22 +68,22 @@ export const SBI_HOME_LOAN_PRODUCTS: SbiHomeLoanProduct[] = [
       'Section 24(b) interest deduction on actual interest debited.',
       'Section 80C principal deduction.'
     ],
-    badge: 'Smart Interest Saver'
+    badge: 'Smart Liquidity Saver'
   },
   {
     id: 'sbi-privilege-homeloan',
     name: 'SBI Privilege Home Loan',
     category: 'Government',
     tagline: 'Exclusive Concessional Package for Central & State Government Employees',
-    minInterestRate: '8.40% p.a.',
+    rateBenchmark: 'Govt Sovereign Package',
     maxTenure: 'Up to 30 Years (Repayment up to 75 years age)',
     maxLoanAmount: 'Based on Service & Pension Eligibility',
     processingFee: '100% Processing Fee Waiver on special campaigns',
-    womenConcession: '0.05% concession for female applicants',
+    womenConcession: 'Special concession for female applicants',
     keyFeatures: [
       'Tailored for employees of Central/State Govt, PSUs, and Public Sector Banks.',
       'Extended repayment period up to 75 years of age (post-retirement pension factored).',
-      'Lower interest rates and priority digital sanction.',
+      'Priority sovereign digital sanction.',
       'Nil prepayment and foreclosure charges.'
     ],
     eligibility: [
@@ -99,7 +99,7 @@ export const SBI_HOME_LOAN_PRODUCTS: SbiHomeLoanProduct[] = [
     name: 'SBI Shaurya Home Loan',
     category: 'Defence',
     tagline: 'Dedicated Concessional Home Loan for Army, Navy & Airforce Personnel',
-    minInterestRate: '8.40% p.a.',
+    rateBenchmark: 'Defence Forces Package',
     maxTenure: 'Up to 30 Years',
     maxLoanAmount: 'Up to 90% of Cost',
     processingFee: 'Special concessional processing fees',
@@ -123,14 +123,14 @@ export const SBI_HOME_LOAN_PRODUCTS: SbiHomeLoanProduct[] = [
     name: 'SBI Top-Up Home Loan',
     category: 'Top-Up',
     tagline: 'Multi-Purpose Low-Cost Liquidity on Your Existing SBI Home Loan',
-    minInterestRate: '8.80% p.a.',
+    rateBenchmark: 'Existing Borrower Facility',
     maxTenure: 'Up to 30 Years or residual home loan tenure',
     maxLoanAmount: 'Up to ₹5 Crores',
     processingFee: '₹2,000 to ₹5,000 + GST',
     womenConcession: 'Standard concessions apply',
     keyFeatures: [
       'Available for personal expenses, home renovation, medical needs, or child marriage.',
-      'Much lower interest rate than personal loans (approx 8.8% vs 14%+ personal loan).',
+      'Substantially lower financing charges than unsecured personal loans.',
       'Minimal documentation with instant disbursement for existing SBI borrowers with good repayment track record.'
     ],
     eligibility: [
@@ -146,11 +146,11 @@ export const SBI_HOME_LOAN_PRODUCTS: SbiHomeLoanProduct[] = [
     name: 'SBI Realty (Plot Loan)',
     category: 'Plot',
     tagline: 'Finance Your Dream Residential Plot for Future Home Construction',
-    minInterestRate: '8.65% p.a.',
+    rateBenchmark: 'Plot Purchase Facility',
     maxTenure: 'Up to 10 Years',
     maxLoanAmount: 'Up to ₹15 Crores',
     processingFee: '0.35% of loan amount',
-    womenConcession: '5 bps concession',
+    womenConcession: 'Special concession for women applicants',
     keyFeatures: [
       'Loan for purchasing residential land/plot for construction of house.',
       'House construction must begin within 5 years from date of loan sanction.',

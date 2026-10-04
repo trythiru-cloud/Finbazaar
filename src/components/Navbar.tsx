@@ -16,7 +16,10 @@ import {
   Menu,
   X,
   Gauge,
-  Home
+  Home,
+  RefreshCw,
+  Download,
+  Calculator
 } from 'lucide-react';
 import { SuryaMandalaMotif, PadmaLotusMotif } from './RangoliMotifs.tsx';
 import { UserProfile } from '../data/userPortfolio.ts';
@@ -28,6 +31,10 @@ interface NavbarProps {
   onOpenEnquiry: (schemeId?: string) => void;
   onOpenBankSync: () => void;
   onOpenAiAnt?: () => void;
+  onOpenLeadsDesk?: () => void;
+  onRefreshUserData?: () => Promise<void> | void;
+  onExportUserData?: () => void;
+  isRefreshingUserData?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -36,15 +43,20 @@ export const Navbar: React.FC<NavbarProps> = ({
   userProfile,
   onOpenEnquiry,
   onOpenBankSync,
-  onOpenAiAnt
+  onOpenAiAnt,
+  onOpenLeadsDesk,
+  onRefreshUserData,
+  onExportUserData,
+  isRefreshingUserData = false
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   const navItems = [
     { id: 'overview', label: 'Overview', icon: PieChart },
     { id: 'sbi-schemes', label: 'SBI Life Schemes', icon: ShieldCheck, badge: '11 Schemes' },
-    { id: 'homeloan-emi', label: 'SBI Home Loan & EMI', icon: Home, badge: '8.50%' },
-    { id: 'risk-returns', label: 'Risk & Scoring', icon: Gauge, badge: 'New' },
+    { id: 'homeloan-emi', label: 'SBI Home Loan & EMI', icon: Home, badge: 'EMI Calc' },
+    { id: 'eligibility-calc', label: 'Eligibility Calc', icon: Calculator, badge: 'New' },
+    { id: 'risk-returns', label: 'Risk & Scoring', icon: Gauge },
     { id: 'investments', label: 'Investment Tracker', icon: Layers },
     { id: 'budget-goals', label: 'Budget Goals', icon: Target },
     { id: 'bank-sync', label: 'Bank Sync (AA)', icon: Landmark },
@@ -83,7 +95,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Auto-Picked User Pill */}
           <div className="flex items-center gap-2 shrink-0">
-            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-stone-900 border border-stone-800 text-[10px] text-stone-300">
+            <div 
+              onClick={() => onExportUserData && onExportUserData()}
+              className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-stone-900 border border-stone-800 text-[10px] text-stone-300 cursor-pointer hover:border-amber-400/50 transition-colors"
+              title="Synchronous User Profile - Click to view or update mobile"
+            >
               <UserCheck className="w-3 h-3 text-emerald-400" />
               <span className="font-semibold text-stone-200">{userProfile.name}</span>
               <span className="text-stone-500">•</span>
@@ -92,8 +108,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {userProfile.location.split(',')[0]}
               </span>
               <span className="text-stone-500">•</span>
-              <span className="font-mono text-amber-300">{userProfile.mobile}</span>
+              <span className="text-stone-400">Mobile:</span>
+              <span className="font-mono text-amber-300 font-bold">{userProfile.mobile}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse ml-0.5" title="Synchronous Live" />
             </div>
+
+            {onOpenLeadsDesk && (
+              <button
+                onClick={onOpenLeadsDesk}
+                className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-[10px] text-emerald-400 font-semibold flex items-center gap-1 transition-colors"
+                title="View Synchronously Registered Leads"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Synchronous Leads</span>
+              </button>
+            )}
 
             <button
               onClick={() => onOpenEnquiry()}
@@ -165,10 +194,62 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               );
             })}
+
+            {/* Synchronous User Data Controls: Placed Next to AI Planner */}
+            <div className="flex items-center gap-1.5 ml-1 pl-1.5 border-l border-stone-800">
+              {/* User Synchronous Mobile Number Pill */}
+              <button
+                type="button"
+                onClick={() => onExportUserData && onExportUserData()}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs bg-stone-900/90 hover:bg-stone-800 border border-teal-500/30 hover:border-amber-400/50 transition-all shadow-sm group"
+                title="Synchronous User Mobile - Click to view or update profile"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-stone-400 text-[11px] hidden xl:inline">Mobile:</span>
+                <span className="font-mono text-amber-300 font-bold text-[11px]">{userProfile.mobile}</span>
+              </button>
+
+              {onRefreshUserData && (
+                <button
+                  type="button"
+                  onClick={onRefreshUserData}
+                  disabled={isRefreshingUserData}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-stone-300 hover:text-white bg-stone-900/90 hover:bg-stone-800 border border-stone-800 hover:border-amber-400/50 transition-all shadow-sm group"
+                  title="Synchronously Refresh User Details"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 text-teal-400 group-hover:text-amber-300 transition-colors ${isRefreshingUserData ? 'animate-spin text-amber-400' : ''}`} />
+                  <span className="hidden xl:inline text-[11px]">Refresh</span>
+                </button>
+              )}
+
+              {onExportUserData && (
+                <button
+                  type="button"
+                  onClick={onExportUserData}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-stone-300 hover:text-amber-300 bg-stone-900/90 hover:bg-stone-800 border border-stone-800 hover:border-amber-400/50 transition-all shadow-sm group"
+                  title="Export User Data (GDPR & DPDP Act Compliant)"
+                >
+                  <Download className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+                  <span className="hidden xl:inline text-[11px]">Export</span>
+                </button>
+              )}
+            </div>
           </nav>
 
           {/* Right Action CTAs */}
           <div className="hidden sm:flex items-center gap-2">
+            {onOpenLeadsDesk && (
+              <button
+                onClick={onOpenLeadsDesk}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-stone-200 bg-stone-900/90 hover:bg-stone-800 border border-amber-500/30 hover:border-amber-400/60 transition-all shadow-sm"
+                title="View Synchronous Leads Register & Dispatch Desk"
+              >
+                <Layers className="w-3.5 h-3.5 text-amber-400" />
+                <span>Synchronous Leads</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              </button>
+            )}
+
             {onOpenAiAnt && (
               <button
                 onClick={onOpenAiAnt}
@@ -236,24 +317,73 @@ export const Navbar: React.FC<NavbarProps> = ({
             const isActive = activeTab === item.id;
 
             return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold ${
-                  isActive
-                    ? 'bg-amber-400 text-black'
-                    : 'text-stone-300 hover:bg-stone-900'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Icon className="w-4 h-4" />
-                  <span>{item.label}</span>
-                </div>
-                <ChevronRight className="w-4 h-4 opacity-50" />
-              </button>
+              <div key={item.id} className="space-y-1">
+                <button
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold ${
+                    isActive
+                      ? 'bg-amber-400 text-black'
+                      : 'text-stone-300 hover:bg-stone-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon className="w-4 h-4" />
+                    <span>{item.label}</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 opacity-50" />
+                </button>
+
+                {/* Sub-actions next to AI Planner in Mobile menu */}
+                {item.id === 'planner-insights' && (
+                  <div className="space-y-1.5 px-1 pt-1 pb-1">
+                    <div 
+                      onClick={() => {
+                        if (onExportUserData) onExportUserData();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="px-2.5 py-1.5 bg-stone-900/90 rounded-xl border border-teal-500/30 text-[11px] flex items-center justify-between cursor-pointer hover:border-amber-400/40"
+                    >
+                      <div className="flex items-center gap-1.5 text-stone-300">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="text-[10px] text-stone-400 uppercase font-semibold">Synchronous Mobile:</span>
+                      </div>
+                      <span className="font-mono text-amber-300 font-bold">{userProfile.mobile}</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      {onRefreshUserData && (
+                        <button
+                          onClick={() => {
+                            onRefreshUserData();
+                            setMobileMenuOpen(false);
+                          }}
+                          disabled={isRefreshingUserData}
+                          className="py-2 px-2.5 rounded-xl bg-stone-900 border border-stone-800 text-[11px] font-semibold text-stone-300 flex items-center justify-center gap-1.5 hover:bg-stone-800 disabled:opacity-50"
+                        >
+                          <RefreshCw className={`w-3.5 h-3.5 text-teal-400 ${isRefreshingUserData ? 'animate-spin text-amber-400' : ''}`} />
+                          <span>Refresh Data</span>
+                        </button>
+                      )}
+
+                      {onExportUserData && (
+                        <button
+                          onClick={() => {
+                            onExportUserData();
+                            setMobileMenuOpen(false);
+                          }}
+                          className="py-2 px-2.5 rounded-xl bg-stone-900 border border-amber-500/30 text-[11px] font-semibold text-amber-300 flex items-center justify-center gap-1.5 hover:bg-stone-800"
+                        >
+                          <Download className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Export Data</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             );
           })}
 

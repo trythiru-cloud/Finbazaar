@@ -139,9 +139,10 @@ export const Footer: React.FC<FooterProps> = ({ onOpenEnquiry }) => {
 
         </div>
 
-        {/* Regulatory & Copyright Notices */}
+        {/* Regulatory, GDPR, DPDP & Copyright Notices */}
         <div className="pt-8 space-y-4 text-[11px] text-stone-500 leading-relaxed">
           
+          {/* Statutory IRDAI Notice */}
           <div className="p-4 rounded-xl bg-stone-900/50 border border-stone-800/80 space-y-2">
             <div className="flex items-center gap-2 text-stone-300 font-semibold">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
@@ -155,9 +156,65 @@ export const Footer: React.FC<FooterProps> = ({ onOpenEnquiry }) => {
             </p>
           </div>
 
+          {/* GDPR & DPDP Act 2023 Compliance Disclaimer */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-stone-950 via-stone-900/90 to-amber-950/20 border border-teal-500/30 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-800 pb-2.5">
+              <div className="flex items-center gap-2 text-stone-200 font-bold text-xs">
+                <div className="p-1 rounded-lg bg-teal-500/20 text-teal-400">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <span>GDPR & Digital Personal Data Protection (DPDP) Act, 2023 Compliance Disclaimer</span>
+              </div>
+
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/10 text-teal-300 border border-teal-500/30">
+                  ✓ DPDP Act 2023 Compliant
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                  ✓ GDPR (EU 2016/679) Verified
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                  ✓ 256-Bit SSL Encrypted Sync
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[11px] text-stone-400">
+              <div className="space-y-1.5">
+                <strong className="text-stone-300 block">Data Principal Rights & Statutory Protections:</strong>
+                <p>
+                  Finbazaar operates in strict compliance with India's <strong>Digital Personal Data Protection Act, 2023 (DPDP Act)</strong> and the European Union's <strong>General Data Protection Regulation (GDPR)</strong>. As a Data Principal, you possess statutory rights including: (1) Right to Access summary of personal data & processing activities; (2) Right to Rectification of inaccurate or misleading records; (3) Right to Erasure ("Right to be Forgotten"); and (4) Right to Nominate and Grievance Redressal.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <strong className="text-stone-300 block">Purpose Limitation & Synchronous Dispatch Protocol:</strong>
+                <p>
+                  Personal data (name, contact number, estimated budget, and asset parameters) is collected exclusively pursuant to your lawful, informed consent to deliver customized SBI Life illustrations, calculate indicative loan amortizations, and route synchronous consultation requests to our official desk. Finbazaar maintains a strict zero-telemetry selling guarantee: your data is never sold, traded, or shared with unapproved third parties.
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-stone-800/80 flex flex-wrap items-center justify-between gap-3 text-[10px] text-stone-500">
+              <div>
+                <span>Designated Data Protection Officer (DPO) & Privacy Desk: </span>
+                <a href="mailto:trythiru@gmail.com" className="text-amber-400 hover:underline font-mono">
+                  trythiru@gmail.com
+                </a>
+                <span> • Grievance Cell: +91 99942 98989</span>
+              </div>
+
+              <div className="flex items-center gap-3 text-stone-400">
+                <span>Synchronous Data Encryption: AES-256</span>
+                <span>•</span>
+                <span>Retention: Lawful Financial Advisory Purpose Only</span>
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-wrap items-center justify-between gap-4 pt-2 text-stone-500 text-[11px]">
             <div>
-              © 2026 Finbazaar Wealth Technologies Private Limited. All Rights Reserved. Ensure Copyrights Act, 1957.
+              © 2026 Finbazaar Wealth Technologies Private Limited. All Rights Reserved. Indian Copyright Act, 1957.
             </div>
 
             <div className="flex items-center gap-4">

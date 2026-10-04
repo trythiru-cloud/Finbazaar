@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Building2, 
   Sparkles, 
@@ -33,6 +33,8 @@ import { NatureSavingBackground } from './components/NatureSavingBackground.tsx'
 import { EnquiryModal } from './components/EnquiryModal.tsx';
 import { BankSyncModal } from './components/BankSyncModal.tsx';
 import { AiAntExplainerModal } from './components/AiAntExplainerModal.tsx';
+import { UserDataExportModal } from './components/UserDataExportModal.tsx';
+import { EligibilityCalculator } from './components/EligibilityCalculator.tsx';
 import { Footer } from './components/Footer.tsx';
 import { 
   SuryaMandalaMotif, 
@@ -54,20 +56,104 @@ export default function App() {
   // Modals
   const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
   const [targetSchemeId, setTargetSchemeId] = useState<string>('sbi-smart-champ');
+  const [enquiryInitialTab, setEnquiryInitialTab] = useState<'form' | 'leads'>('form');
   const [isBankSyncOpen, setIsBankSyncOpen] = useState(false);
 
   // AI Ant Guide Modal State
   const [isAiAntOpen, setIsAiAntOpen] = useState(false);
   const [aiAntSchemeId, setAiAntSchemeId] = useState<string>('sbi-smart-champ');
 
+  // Synchronous User Data Export & Refresh Modal State
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isRefreshingUserData, setIsRefreshingUserData] = useState(false);
+  const [lastSyncedAt, setLastSyncedAt] = useState<string>(new Date().toISOString());
+
   const handleOpenEnquiry = (schemeId?: string) => {
     if (schemeId) setTargetSchemeId(schemeId);
+    setEnquiryInitialTab('form');
+    setIsEnquiryOpen(true);
+  };
+
+  const handleOpenSynchronousLeads = () => {
+    setEnquiryInitialTab('leads');
     setIsEnquiryOpen(true);
   };
 
   const handleOpenAiAnt = (schemeId?: string) => {
     if (schemeId) setAiAntSchemeId(schemeId);
     setIsAiAntOpen(true);
+  };
+
+  // Synchronize user profile on initial app mount
+  useEffect(() => {
+    const fetchInitialSyncUserData = async () => {
+      try {
+        const res = await fetch('/api/user-data');
+        const data = await res.json();
+        if (data && data.success && data.userData?.profile) {
+          setUserProfile(prev => ({
+            ...prev,
+            ...data.userData.profile
+          }));
+          if (data.userData.lastSynchronizedAt) {
+            setLastSyncedAt(data.userData.lastSynchronizedAt);
+          }
+        }
+      } catch (e) {
+        console.warn('Initial user profile sync:', e);
+      }
+    };
+    fetchInitialSyncUserData();
+  }, []);
+
+  // Synchronously Refresh User Profile with Server
+  const handleRefreshUserData = async () => {
+    setIsRefreshingUserData(true);
+    try {
+      const res = await fetch('/api/user-data/refresh', { method: 'POST' });
+      const data = await res.json();
+      if (data && data.success && data.userData?.profile) {
+        setUserProfile(prev => ({
+          ...prev,
+          ...data.userData.profile
+        }));
+        setLastSyncedAt(data.timestamp || new Date().toISOString());
+      } else {
+        setLastSyncedAt(new Date().toISOString());
+      }
+    } catch (err) {
+      console.error('Error synchronously refreshing user data:', err);
+      setLastSyncedAt(new Date().toISOString());
+    } finally {
+      setIsRefreshingUserData(false);
+    }
+  };
+
+  // Open Export User Data Desk (GDPR & DPDP Act Compliant)
+  const handleExportUserData = () => {
+    setIsExportModalOpen(true);
+  };
+
+  // Synchronously Update User Mobile (Strictly rejecting hotline 9994298989)
+  const handleUpdateMobile = async (newMobile: string) => {
+    const cleanDigits = newMobile.replace(/\D/g, '');
+    if (cleanDigits === '9994298989' || cleanDigits === '919994298989' || cleanDigits.endsWith('9994298989')) {
+      throw new Error('Validation Error: Mobile number 9994298989 is restricted (reserved for the official Finbazaar / SBI Advisory Hotline) and cannot be saved. Please enter your valid personal mobile number.');
+    }
+    const res = await fetch('/api/user-data/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mobile: newMobile })
+    });
+    const data = await res.json();
+    if (!data.success && data.error) {
+      throw new Error(data.error);
+    }
+    setUserProfile(prev => ({
+      ...prev,
+      mobile: newMobile
+    }));
+    setLastSyncedAt(new Date().toISOString());
   };
 
   const handleBankSynced = (newAccount: BankAccount) => {
@@ -95,6 +181,10 @@ export default function App() {
         onOpenEnquiry={handleOpenEnquiry}
         onOpenBankSync={() => setIsBankSyncOpen(true)}
         onOpenAiAnt={() => handleOpenAiAnt()}
+        onOpenLeadsDesk={handleOpenSynchronousLeads}
+        onRefreshUserData={handleRefreshUserData}
+        onExportUserData={handleExportUserData}
+        isRefreshingUserData={isRefreshingUserData}
       />
 
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
@@ -441,11 +531,50 @@ export default function App() {
 
             {/* SBI Home Loan & EMI Calculator (Placed directly below Explore SBI Schemes) */}
             <div className="space-y-4 pt-2">
-              <SbiHomeLoanSection onOpenEnquiry={handleOpenEnquiry} />
+              <SbiHomeLoanSection 
+                onOpenEnquiry={handleOpenEnquiry} 
+                onOpenSynchronousLeads={handleOpenSynchronousLeads}
+                onOpenEligibilityCalc={() => setActiveTab('eligibility-calc')}
+              />
+            </div>
+
+            {/* Financial Eligibility Calculator (Home Loan & SBI Life Protection Cover) */}
+            <div className="space-y-4 pt-4 border-t border-stone-800">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-2xl font-bold text-stone-100 font-['Cinzel',serif] flex items-center gap-2">
+                    <Calculator className="w-6 h-6 text-amber-400" />
+                    <span>Financial Eligibility Underwriting Engines</span>
+                  </h3>
+                  <p className="text-xs text-stone-400 mt-0.5">
+                    Evaluate your maximum borrowing capacity for SBI Home Loans and family protection under SBI Life Human Life Value (HLV).
+                  </p>
+                </div>
+                <button
+                  onClick={() => setActiveTab('eligibility-calc')}
+                  className="px-3.5 py-1.5 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-amber-300 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                >
+                  <span>Focus View</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <EligibilityCalculator 
+                userProfile={userProfile}
+                onOpenEnquiry={handleOpenEnquiry}
+                onOpenAiAnt={handleOpenAiAnt}
+              />
             </div>
 
             {/* AI Financial Health Preview */}
-            <FinancialPlannerInsights onOpenEnquiry={handleOpenEnquiry} />
+            <FinancialPlannerInsights 
+              onOpenEnquiry={handleOpenEnquiry} 
+              userProfile={userProfile}
+              lastSyncedAt={lastSyncedAt}
+              onRefreshUserData={handleRefreshUserData}
+              onExportUserData={handleExportUserData}
+              isRefreshingUserData={isRefreshingUserData}
+            />
 
             {/* Live Financial News Preview via Google Search Grounding */}
             <div className="space-y-4">
@@ -483,7 +612,20 @@ export default function App() {
 
         {/* SBI HOME LOAN & EMI CALCULATOR TAB (Placed below Explore SBI Schemes) */}
         {activeTab === 'homeloan-emi' && (
-          <SbiHomeLoanSection onOpenEnquiry={handleOpenEnquiry} />
+          <SbiHomeLoanSection 
+            onOpenEnquiry={handleOpenEnquiry} 
+            onOpenSynchronousLeads={handleOpenSynchronousLeads}
+            onOpenEligibilityCalc={() => setActiveTab('eligibility-calc')}
+          />
+        )}
+
+        {/* ELIGIBILITY CALCULATOR TAB */}
+        {activeTab === 'eligibility-calc' && (
+          <EligibilityCalculator 
+            userProfile={userProfile}
+            onOpenEnquiry={handleOpenEnquiry}
+            onOpenAiAnt={handleOpenAiAnt}
+          />
         )}
 
         {/* RISK & RETURNS ASSESSMENT TAB */}
@@ -631,7 +773,14 @@ export default function App() {
                 Comprehensive AI evaluation of your wealth health, asset rebalancing matrix, and customized SBI Life allocation recommendations.
               </p>
             </div>
-            <FinancialPlannerInsights onOpenEnquiry={handleOpenEnquiry} />
+            <FinancialPlannerInsights 
+              onOpenEnquiry={handleOpenEnquiry}
+              userProfile={userProfile}
+              lastSyncedAt={lastSyncedAt}
+              onRefreshUserData={handleRefreshUserData}
+              onExportUserData={handleExportUserData}
+              isRefreshingUserData={isRefreshingUserData}
+            />
           </div>
         )}
 
@@ -642,6 +791,7 @@ export default function App() {
         isOpen={isEnquiryOpen}
         onClose={() => setIsEnquiryOpen(false)}
         initialSchemeId={targetSchemeId}
+        initialTab={enquiryInitialTab}
         autoUserData={{
           name: userProfile.name,
           mobile: userProfile.mobile,
@@ -662,7 +812,28 @@ export default function App() {
         isOpen={isAiAntOpen}
         onClose={() => setIsAiAntOpen(false)}
         initialSchemeId={aiAntSchemeId}
-        onSelectSchemeForEnquiry={(scheme) => handleOpenEnquiry(scheme.id)}
+        userProfile={userProfile}
+        onSelectSchemeForEnquiry={(scheme, userDetails) => {
+          if (userDetails?.name || userDetails?.mobile) {
+            setUserProfile(prev => ({
+              ...prev,
+              name: userDetails.name || prev.name,
+              mobile: userDetails.mobile || prev.mobile
+            }));
+          }
+          handleOpenEnquiry(scheme.id);
+        }}
+      />
+
+      {/* GDPR & DPDP Act 2023 Compliant Synchronous User Data Export Modal */}
+      <UserDataExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        userProfile={userProfile}
+        lastSyncedAt={lastSyncedAt}
+        onRefreshData={handleRefreshUserData}
+        onUpdateMobile={handleUpdateMobile}
+        isRefreshing={isRefreshingUserData}
       />
 
       {/* Floating AI Ant Guide Summoner Widget */}
