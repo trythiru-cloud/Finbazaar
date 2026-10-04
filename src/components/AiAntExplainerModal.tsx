@@ -45,8 +45,8 @@ export const AiAntExplainerModal: React.FC<AiAntExplainerModalProps> = ({
   const [explanationData, setExplanationData] = useState<any>(null);
 
   // User name and mobile number to be captured while using ant chant AI
-  const [userName, setUserName] = useState<string>(userProfile?.name || 'Thirumalai N');
-  const [mobile, setMobile] = useState<string>(userProfile?.mobile || '+91 98401 23456');
+  const [userName, setUserName] = useState<string>(userProfile?.name || '');
+  const [mobile, setMobile] = useState<string>(userProfile?.mobile || '');
   const [mobileError, setMobileError] = useState<string | null>(null);
   const [capturedLeadNotification, setCapturedLeadNotification] = useState<string | null>(null);
 
@@ -102,7 +102,7 @@ export const AiAntExplainerModal: React.FC<AiAntExplainerModalProps> = ({
           category: activeScheme?.category || 'general',
           userQuestion: customQuestion || '',
           userName: userName.trim(),
-          userMobile: isMobileValid ? mobile.trim() : (userProfile?.mobile || '+91 98401 23456'),
+          userMobile: isMobileValid ? mobile.trim() : (userProfile?.mobile || ''),
           location: userProfile?.location || 'Chennai, Tamil Nadu'
         })
       });
@@ -334,7 +334,7 @@ export const AiAntExplainerModal: React.FC<AiAntExplainerModalProps> = ({
                     const err = validateMobile(e.target.value);
                     setMobileError(err);
                   }}
-                  placeholder="+91 98401 23456"
+                  placeholder="+91 9XXXXXXXXX"
                   className={`w-full bg-stone-950 border rounded-xl px-3 py-1.5 text-xs font-mono text-stone-100 placeholder-stone-600 focus:outline-none ${
                     mobileError ? 'border-rose-500 focus:border-rose-400' : 'border-stone-800 focus:border-amber-400'
                   }`}

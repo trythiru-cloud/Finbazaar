@@ -26,6 +26,7 @@ interface UserDataExportModalProps {
   lastSyncedAt?: string;
   onRefreshData?: () => Promise<void>;
   onUpdateMobile?: (newMobile: string) => Promise<boolean | void>;
+  onUpdateProfile?: (updated: { name?: string; mobile?: string }) => Promise<boolean | void>;
   isRefreshing?: boolean;
 }
 
@@ -36,11 +37,18 @@ export const UserDataExportModal: React.FC<UserDataExportModalProps> = ({
   lastSyncedAt = new Date().toISOString(),
   onRefreshData,
   onUpdateMobile,
+  onUpdateProfile,
   isRefreshing = false
 }) => {
   const [copied, setCopied] = useState(false);
   const [downloadingFormat, setDownloadingFormat] = useState<'json' | 'csv' | null>(null);
   
+  // Inline Name Update State
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editNameValue, setEditNameValue] = useState(userProfile.name);
+  const [nameSaveSuccess, setNameSaveSuccess] = useState(false);
+  const [isSavingName, setIsSavingName] = useState(false);
+
   // Inline Mobile Number Update State
   const [isEditingMobile, setIsEditingMobile] = useState(false);
   const [editMobileValue, setEditMobileValue] = useState(userProfile.mobile);
@@ -49,6 +57,28 @@ export const UserDataExportModal: React.FC<UserDataExportModalProps> = ({
   const [isSavingMobile, setIsSavingMobile] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleSaveName = async () => {
+    setIsSavingName(true);
+    try {
+      if (onUpdateProfile) {
+        await onUpdateProfile({ name: editNameValue });
+      } else {
+        await fetch('/api/user-data/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: editNameValue })
+        });
+      }
+      setNameSaveSuccess(true);
+      setIsEditingName(false);
+      setTimeout(() => setNameSaveSuccess(false), 3000);
+    } catch (e: any) {
+      console.error('Error saving name:', e);
+    } finally {
+      setIsSavingName(false);
+    }
+  };
 
   const validateMobile = (num: string): string | null => {
     const cleanDigits = num.replace(/\D/g, '');
@@ -72,7 +102,9 @@ export const UserDataExportModal: React.FC<UserDataExportModalProps> = ({
     setMobileError(null);
 
     try {
-      if (onUpdateMobile) {
+      if (onUpdateProfile) {
+        await onUpdateProfile({ mobile: editMobileValue });
+      } else if (onUpdateMobile) {
         await onUpdateMobile(editMobileValue);
       } else {
         const res = await fetch('/api/user-data/update', {
@@ -245,9 +277,65 @@ DPO Desk: trythiru@gmail.com | +91 99942 98989`;
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="p-3 rounded-xl bg-stone-950/70 border border-stone-800 space-y-0.5">
-                <span className="text-[10px] text-stone-500 uppercase tracking-wider">Full Legal Name</span>
-                <div className="font-semibold text-stone-100 text-sm">{userProfile.name}</div>
+              {/* Full Legal Name Card with Synchronous Edit */}
+              <div className="p-3 rounded-xl bg-stone-950/70 border border-stone-800 space-y-1 sm:col-span-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-stone-500 uppercase tracking-wider">
+                    Full Legal Name (Synchronous)
+                  </span>
+                  {!isEditingName && (
+                    <button
+                      onClick={() => {
+                        setEditNameValue(userProfile.name);
+                        setIsEditingName(true);
+                      }}
+                      className="text-[10px] text-amber-400 hover:text-amber-300 font-semibold underline"
+                    >
+                      {userProfile.name ? 'Update' : 'Set Name'}
+                    </button>
+                  )}
+                </div>
+
+                {isEditingName ? (
+                  <div className="space-y-1.5 pt-1">
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="text"
+                        value={editNameValue}
+                        onChange={(e) => setEditNameValue(e.target.value)}
+                        placeholder="Enter Legal Name"
+                        className="w-full px-2.5 py-1.5 bg-stone-900 border border-stone-700 rounded-lg text-xs text-stone-100 focus:outline-none focus:border-amber-400"
+                      />
+                      <button
+                        onClick={handleSaveName}
+                        disabled={isSavingName}
+                        className="px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-black font-bold text-[11px] whitespace-nowrap transition-colors disabled:opacity-50"
+                      >
+                        {isSavingName ? 'Saving...' : 'Save'}
+                      </button>
+                      <button
+                        onClick={() => setIsEditingName(false)}
+                        className="px-2 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-300 text-[11px]"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="font-semibold text-stone-100 text-sm flex items-center justify-between">
+                      <span>{userProfile.name || 'Visitor / Guest'}</span>
+                      <span className="text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.2 rounded font-sans">
+                        Synchronous
+                      </span>
+                    </div>
+                    {nameSaveSuccess && (
+                      <span className="text-[10px] text-emerald-400 font-medium block mt-0.5">
+                        ✓ User name synchronously updated!
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Contact Mobile Card with Synchronous Edit & Rejection of 9994298989 */}

@@ -370,10 +370,10 @@ export const SbiHomeLoanSection: React.FC<SbiHomeLoanSectionProps> = ({
               </div>
             </div>
 
-            {/* Profile / Applicant Category Selector (Replacing Interest Rate Slider) */}
+            {/* Category Selector (Replacing Interest Rate Slider) */}
             <div className="space-y-2">
               <label className="block text-xs font-semibold text-stone-300">
-                Applicant Cadre / Profile Classification
+                Employment Cadre / Borrower Classification
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
@@ -405,7 +405,7 @@ export const SbiHomeLoanSection: React.FC<SbiHomeLoanSectionProps> = ({
                 <span>Interest Rate Policy & Fair Lending Compliance</span>
               </div>
               <p className="text-[11px] text-stone-400 leading-relaxed">
-                In compliance with RBI fair lending regulations and SBI underwriting norms, interest rates are dynamically determined by individual CIBIL score, loan-to-value (LTV) ratio, and applicant risk profile upon bureau appraisal. Zero static interest rate is displayed publicly to ensure transparent, authentic terms customized directly upon synchronous lead evaluation.
+                In compliance with RBI fair lending regulations and SBI underwriting norms, interest rates are dynamically determined by individual CIBIL score, loan-to-value (LTV) ratio, and borrower risk assessment upon bureau appraisal. Zero static interest rate is displayed publicly to ensure transparent, authentic terms customized directly upon synchronous lead evaluation.
               </p>
             </div>
 

@@ -28,14 +28,14 @@ interface EnquiryRecord {
   timestamp: string;
   recipientEmail: string;
   whatsappRecipient: string;
-  status: 'Pending Contact' | 'Verified' | 'Follow-up Scheduled';
+  status: 'Pending Contact' | 'Verified' | 'Follow-up Scheduled' | 'Synchronously Verified & Dispatched' | 'Visitor Active' | 'Auto-Captured' | string;
 }
 
 const enquiryDatabase: EnquiryRecord[] = [
   {
     id: 'FB-LEAD-101',
     userName: 'Karthik S',
-    mobile: '+91 98401 23456',
+    mobile: '+91 98765 43210',
     location: 'Chennai, Tamil Nadu',
     scheme: 'SBI Life - Smart Champ Insurance (Child Plan)',
     investmentAmount: '₹1,50,000 / year',
@@ -926,12 +926,12 @@ app.get('/api/enquiries', (_req: Request, res: Response) => {
 // Synchronous User Data Store (GDPR & DPDP Act 2023 Compliant)
 let synchronousUserData = {
   profile: {
-    name: 'Thirumalai N',
+    name: '',
     email: 'trythiru@gmail.com',
-    mobile: '+91 98401 23456',
+    mobile: '',
     location: 'Chennai, Tamil Nadu',
-    panNumber: 'ABCDE1234F',
-    kycVerified: true,
+    panNumber: '',
+    kycVerified: false,
     age: 36,
     monthlyIncome: 145000
   },
@@ -987,7 +987,7 @@ app.post('/api/user-data/refresh', (_req: Request, res: Response) => {
   });
 });
 
-// 3. Synchronously Update User Details
+// 3. Synchronously Update User Details & Automatically Capture Under Lead Synchronous
 app.post('/api/user-data/update', (req: Request, res: Response) => {
   const { name, email, mobile, location, age, monthlyIncome, panNumber } = req.body;
 
@@ -1003,19 +1003,141 @@ app.post('/api/user-data/update', (req: Request, res: Response) => {
     synchronousUserData.profile.mobile = mobile;
   }
 
-  if (name) synchronousUserData.profile.name = name;
-  if (email) synchronousUserData.profile.email = email;
-  if (location) synchronousUserData.profile.location = location;
-  if (age) synchronousUserData.profile.age = Number(age);
-  if (monthlyIncome) synchronousUserData.profile.monthlyIncome = Number(monthlyIncome);
-  if (panNumber) synchronousUserData.profile.panNumber = panNumber;
+  if (name !== undefined) synchronousUserData.profile.name = name;
+  if (email !== undefined) synchronousUserData.profile.email = email;
+  if (location !== undefined) synchronousUserData.profile.location = location;
+  if (age !== undefined) synchronousUserData.profile.age = Number(age);
+  if (monthlyIncome !== undefined) synchronousUserData.profile.monthlyIncome = Number(monthlyIncome);
+  if (panNumber !== undefined) synchronousUserData.profile.panNumber = panNumber;
 
   synchronousUserData.lastSynchronizedAt = new Date().toISOString();
 
+  // User and visitors details automatically to be captured under lead synchronous
+  const activeName = (synchronousUserData.profile.name || name || '').trim();
+  const activeMobile = (synchronousUserData.profile.mobile || mobile || '').trim();
+
+  if (activeName || activeMobile) {
+    const autoLeadId = `LEAD-SYNC-${Date.now().toString().slice(-6)}`;
+    const cleanActiveMobile = activeMobile.replace(/\D/g, '');
+    
+    // Check if lead already exists in enquiryDatabase
+    const existingIndex = enquiryDatabase.findIndex(
+      e => (cleanActiveMobile.length >= 10 && e.mobile.replace(/\D/g, '') === cleanActiveMobile) ||
+           (activeName && e.userName.toLowerCase() === activeName.toLowerCase())
+    );
+
+    if (existingIndex >= 0) {
+      // Synchronously update existing lead record
+      enquiryDatabase[existingIndex] = {
+        ...enquiryDatabase[existingIndex],
+        userName: activeName || enquiryDatabase[existingIndex].userName,
+        mobile: activeMobile || enquiryDatabase[existingIndex].mobile,
+        location: location || enquiryDatabase[existingIndex].location,
+        timestamp: new Date().toISOString(),
+        status: cleanActiveMobile.length >= 10 ? 'Verified' : 'Visitor Active'
+      };
+      console.log(`[LEAD SYNCHRONOUS AUTO-CAPTURE] Updated existing lead: ${activeName} (${activeMobile})`);
+    } else {
+      // Automatically register new synchronous lead record
+      const autoLeadRecord: EnquiryRecord = {
+        id: autoLeadId,
+        userName: activeName || 'Valued Visitor',
+        mobile: activeMobile || 'Pending Entry',
+        location: location || synchronousUserData.profile.location || 'Chennai, Tamil Nadu',
+        scheme: 'Finbazaar Portfolio & Synchronous Profile Desk',
+        investmentAmount: 'Full Financial Assessment',
+        investmentType: 'User Profile Synchronous Lead',
+        tenure: 'Long Term',
+        notes: 'User profile details automatically captured and synchronized with advisor desk.',
+        timestamp: new Date().toISOString(),
+        recipientEmail: 'trythiru@gmail.com',
+        whatsappRecipient: '+919994298989',
+        status: cleanActiveMobile.length >= 10 ? 'Verified' : 'Visitor Active'
+      };
+      enquiryDatabase.unshift(autoLeadRecord);
+      console.log(`[LEAD SYNCHRONOUS AUTO-CAPTURE] New lead captured: ${activeName} (${activeMobile}) -> ${autoLeadId}`);
+    }
+  }
+
   return res.json({
     success: true,
-    message: 'User details synchronously updated.',
+    message: 'User details synchronously updated and captured under leads desk.',
     userData: synchronousUserData
+  });
+});
+
+// Automatic Visitor Details & Lead Synchronous Capture API
+app.post('/api/visitor-lead/auto-capture', (req: Request, res: Response) => {
+  const { visitorId, userName, mobile, location, scheme, action, notes } = req.body;
+
+  const resolvedVisitorId = visitorId || `VISITOR-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+  const resolvedName = (userName || synchronousUserData.profile.name || '').trim();
+  const resolvedMobile = (mobile || synchronousUserData.profile.mobile || '').trim();
+  const cleanMobile = resolvedMobile.replace(/\D/g, '');
+
+  // Reject hotline number from being recorded as visitor mobile
+  const finalMobile = (cleanMobile === '9994298989' || cleanMobile === '919994298989' || cleanMobile.endsWith('9994298989'))
+    ? ''
+    : resolvedMobile;
+
+  // Search for existing lead associated with visitorId or mobile
+  const existingIndex = enquiryDatabase.findIndex(
+    e => (finalMobile && finalMobile.replace(/\D/g, '').length >= 10 && e.mobile.replace(/\D/g, '') === finalMobile.replace(/\D/g, '')) ||
+         (resolvedName && e.userName.toLowerCase() === resolvedName.toLowerCase()) ||
+         e.id.includes(resolvedVisitorId)
+  );
+
+  let leadRecord: EnquiryRecord;
+
+  if (existingIndex >= 0) {
+    // Update existing lead record with latest activity
+    enquiryDatabase[existingIndex] = {
+      ...enquiryDatabase[existingIndex],
+      userName: resolvedName || enquiryDatabase[existingIndex].userName,
+      mobile: finalMobile || enquiryDatabase[existingIndex].mobile,
+      location: location || enquiryDatabase[existingIndex].location,
+      scheme: scheme || enquiryDatabase[existingIndex].scheme,
+      notes: notes || `Visitor session active: ${action || 'Browsing financial solutions'}.`,
+      timestamp: new Date().toISOString(),
+      status: (finalMobile && finalMobile.replace(/\D/g, '').length >= 10) ? 'Verified' : 'Visitor Active'
+    };
+    leadRecord = enquiryDatabase[existingIndex];
+    console.log(`[VISITOR AUTO-CAPTURE] Updated visitor lead: ${leadRecord.userName} (${leadRecord.mobile})`);
+  } else {
+    // Automatically create new synchronous lead for visitor
+    const leadId = `SYNC-${resolvedVisitorId.slice(-8)}`;
+    leadRecord = {
+      id: leadId,
+      userName: resolvedName || `Visitor #${resolvedVisitorId.slice(-4)}`,
+      mobile: finalMobile || 'Pending Entry',
+      location: location || 'Detected Visitor Session',
+      scheme: scheme || 'Finbazaar Platform Visitor Session',
+      investmentAmount: 'Exploring SBI Portfolio',
+      investmentType: 'Synchronous Visitor Lead',
+      tenure: 'Flexible',
+      notes: notes || `Visitor session automatically captured: ${action || 'Initial visit'}.`,
+      timestamp: new Date().toISOString(),
+      recipientEmail: 'trythiru@gmail.com',
+      whatsappRecipient: '+919994298989',
+      status: (finalMobile && finalMobile.replace(/\D/g, '').length >= 10) ? 'Verified' : 'Visitor Active'
+    };
+    enquiryDatabase.unshift(leadRecord);
+    console.log(`[VISITOR AUTO-CAPTURE] Automatically captured visitor lead: ${leadRecord.userName} (${leadRecord.id})`);
+  }
+
+  // Also update synchronousUserData profile if valid name or mobile was provided
+  if (resolvedName && !synchronousUserData.profile.name) {
+    synchronousUserData.profile.name = resolvedName;
+  }
+  if (finalMobile && !synchronousUserData.profile.mobile) {
+    synchronousUserData.profile.mobile = finalMobile;
+  }
+
+  return res.json({
+    success: true,
+    message: 'Visitor details automatically captured under lead synchronous.',
+    lead: leadRecord,
+    enquiriesCount: enquiryDatabase.length
   });
 });
 
@@ -1096,7 +1218,7 @@ app.post('/api/bank-sync/initiate', (req: Request, res: Response) => {
     success: true,
     requestId,
     bankId: bankId || 'sbi',
-    mobileNumber: mobileNumber || synchronousUserData.profile.mobile || '+91 98401 23456',
+    mobileNumber: mobileNumber || synchronousUserData.profile.mobile || '',
     message: 'OTP consent request dispatched via RBI Account Aggregator protocol.',
     mockOtp: '482910'
   });

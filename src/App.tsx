@@ -84,13 +84,15 @@ export default function App() {
     setIsAiAntOpen(true);
   };
 
-  // Synchronize user profile on initial app mount
+  // Synchronize user profile and automatically capture visitor session on initial app mount
   useEffect(() => {
     const fetchInitialSyncUserData = async () => {
       try {
         const res = await fetch('/api/user-data');
         const data = await res.json();
+        let loadedProfile = null;
         if (data && data.success && data.userData?.profile) {
+          loadedProfile = data.userData.profile;
           setUserProfile(prev => ({
             ...prev,
             ...data.userData.profile
@@ -99,8 +101,28 @@ export default function App() {
             setLastSyncedAt(data.userData.lastSynchronizedAt);
           }
         }
+
+        // Automatic visitor tracking under lead synchronous
+        let visitorId = localStorage.getItem('finbazaar_visitor_id');
+        if (!visitorId) {
+          visitorId = `VISITOR-${Math.random().toString(36).slice(2, 9).toUpperCase()}`;
+          localStorage.setItem('finbazaar_visitor_id', visitorId);
+        }
+
+        await fetch('/api/visitor-lead/auto-capture', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            visitorId,
+            userName: loadedProfile?.name || '',
+            mobile: loadedProfile?.mobile || '',
+            location: loadedProfile?.location || 'Chennai, Tamil Nadu',
+            scheme: 'Finbazaar Platform Visitor Session',
+            action: 'Landing on Overview & SBI Sovereign Portfolio'
+          })
+        });
       } catch (e) {
-        console.warn('Initial user profile sync:', e);
+        console.warn('Initial user profile and visitor sync:', e);
       }
     };
     fetchInitialSyncUserData();
@@ -134,16 +156,18 @@ export default function App() {
     setIsExportModalOpen(true);
   };
 
-  // Synchronously Update User Mobile (Strictly rejecting hotline 9994298989)
-  const handleUpdateMobile = async (newMobile: string) => {
-    const cleanDigits = newMobile.replace(/\D/g, '');
-    if (cleanDigits === '9994298989' || cleanDigits === '919994298989' || cleanDigits.endsWith('9994298989')) {
-      throw new Error('Validation Error: Mobile number 9994298989 is restricted (reserved for the official Finbazaar / SBI Advisory Hotline) and cannot be saved. Please enter your valid personal mobile number.');
+  // Synchronously Update User Details (Name, Mobile, Location) & Auto-Capture Under Lead Synchronous
+  const handleUpdateProfile = async (updated: { name?: string; mobile?: string; location?: string }) => {
+    if (updated.mobile) {
+      const cleanDigits = updated.mobile.replace(/\D/g, '');
+      if (cleanDigits === '9994298989' || cleanDigits === '919994298989' || cleanDigits.endsWith('9994298989')) {
+        throw new Error('Validation Error: Mobile number 9994298989 is restricted (reserved for the official Finbazaar / SBI Advisory Hotline) and cannot be saved. Please enter your valid personal mobile number.');
+      }
     }
     const res = await fetch('/api/user-data/update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mobile: newMobile })
+      body: JSON.stringify(updated)
     });
     const data = await res.json();
     if (!data.success && data.error) {
@@ -151,9 +175,29 @@ export default function App() {
     }
     setUserProfile(prev => ({
       ...prev,
-      mobile: newMobile
+      ...updated
     }));
     setLastSyncedAt(new Date().toISOString());
+
+    // Automatically capture under visitor lead synchronous
+    const visitorId = localStorage.getItem('finbazaar_visitor_id');
+    fetch('/api/visitor-lead/auto-capture', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        visitorId,
+        userName: updated.name || userProfile.name,
+        mobile: updated.mobile || userProfile.mobile,
+        location: updated.location || userProfile.location,
+        scheme: 'User Details Synchronous Update',
+        action: 'Profile Updated'
+      })
+    }).catch(console.warn);
+  };
+
+  // Synchronously Update User Mobile (Strictly rejecting hotline 9994298989)
+  const handleUpdateMobile = async (newMobile: string) => {
+    await handleUpdateProfile({ mobile: newMobile });
   };
 
   const handleBankSynced = (newAccount: BankAccount) => {
@@ -226,15 +270,17 @@ export default function App() {
                   <div className="p-3.5 rounded-2xl bg-stone-950/80 border border-stone-800 text-xs flex flex-wrap items-center justify-between gap-3 text-stone-300 shadow-inner">
                     <div className="flex items-center gap-2">
                       <UserCheck className="w-4 h-4 text-emerald-400" />
-                      <span>Applicant Profile: <strong className="text-stone-100">Verified User</strong></span>
+                      <strong className="text-stone-100">{userProfile.name || 'Verified User'}</strong>
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin className="w-3.5 h-3.5 text-amber-400" />
-                      <span>{userProfile.location}</span>
+                      <span>{userProfile.location || 'Chennai, Tamil Nadu'}</span>
                     </div>
-                    <div className="flex items-center gap-2 font-mono text-amber-300">
-                      <span>{userProfile.mobile}</span>
-                    </div>
+                    {userProfile.mobile && (
+                      <div className="flex items-center gap-2 font-mono text-amber-300">
+                        <span>{userProfile.mobile}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Action CTAs */}
@@ -833,6 +879,7 @@ export default function App() {
         lastSyncedAt={lastSyncedAt}
         onRefreshData={handleRefreshUserData}
         onUpdateMobile={handleUpdateMobile}
+        onUpdateProfile={handleUpdateProfile}
         isRefreshing={isRefreshingUserData}
       />
 

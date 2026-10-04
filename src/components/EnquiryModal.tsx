@@ -60,11 +60,11 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
   autoUserData
 }) => {
   const [activeModalTab, setActiveModalTab] = useState<'form' | 'leads'>(initialTab);
-  const [userName, setUserName] = useState(autoUserData?.name || 'Thirumalai N');
+  const [userName, setUserName] = useState(autoUserData?.name || '');
   const [mobile, setMobile] = useState(
     autoUserData?.mobile && !autoUserData.mobile.replace(/\D/g, '').endsWith('9994298989')
       ? autoUserData.mobile 
-      : '+91 98401 23456'
+      : ''
   );
   const [mobileError, setMobileError] = useState<string | null>(null);
   const [location, setLocation] = useState(autoUserData?.location || 'Chennai, Tamil Nadu');

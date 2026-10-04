@@ -98,18 +98,22 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div 
               onClick={() => onExportUserData && onExportUserData()}
               className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-stone-900 border border-stone-800 text-[10px] text-stone-300 cursor-pointer hover:border-amber-400/50 transition-colors"
-              title="Synchronous User Profile - Click to view or update mobile"
+              title="Synchronous User Profile - Click to view or update details"
             >
               <UserCheck className="w-3 h-3 text-emerald-400" />
-              <span className="font-semibold text-stone-200">{userProfile.name}</span>
+              <span className="font-semibold text-stone-200">{userProfile.name || 'Visitor / Guest'}</span>
               <span className="text-stone-500">•</span>
               <span className="flex items-center gap-0.5 text-stone-400">
                 <MapPin className="w-2.5 h-2.5 text-amber-400" />
-                {userProfile.location.split(',')[0]}
+                {(userProfile.location || 'India').split(',')[0]}
               </span>
               <span className="text-stone-500">•</span>
               <span className="text-stone-400">Mobile:</span>
-              <span className="font-mono text-amber-300 font-bold">{userProfile.mobile}</span>
+              {userProfile.mobile ? (
+                <span className="font-mono text-amber-300 font-bold">{userProfile.mobile}</span>
+              ) : (
+                <span className="text-amber-400 underline font-sans text-[10px] font-semibold">+ Add Mobile</span>
+              )}
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse ml-0.5" title="Synchronous Live" />
             </div>
 
@@ -206,7 +210,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-stone-400 text-[11px] hidden xl:inline">Mobile:</span>
-                <span className="font-mono text-amber-300 font-bold text-[11px]">{userProfile.mobile}</span>
+                <span className="font-mono text-amber-300 font-bold text-[11px]">{userProfile.mobile || '+ Add Mobile'}</span>
               </button>
 
               {onRefreshUserData && (
@@ -350,7 +354,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                         <span className="text-[10px] text-stone-400 uppercase font-semibold">Synchronous Mobile:</span>
                       </div>
-                      <span className="font-mono text-amber-300 font-bold">{userProfile.mobile}</span>
+                      <span className="font-mono text-amber-300 font-bold">{userProfile.mobile || '+ Add Mobile'}</span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">

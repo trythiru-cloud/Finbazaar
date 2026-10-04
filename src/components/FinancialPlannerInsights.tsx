@@ -106,11 +106,11 @@ export const FinancialPlannerInsights: React.FC<FinancialPlannerInsightsProps> =
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-[11px] text-stone-400 mt-0.5">
-              <span className="text-stone-200 font-semibold">{userProfile?.name || 'Thirumalai N'}</span>
+              <span className="text-stone-200 font-semibold">{userProfile?.name || 'Visitor / Guest'}</span>
               <span>•</span>
               <span className="inline-flex items-center gap-1 bg-stone-950 px-2 py-0.5 rounded-lg border border-stone-800 text-[10px]">
                 <span className="text-stone-400">Mobile:</span>
-                <span className="font-mono text-amber-300 font-bold">{userProfile?.mobile || '+91 98401 23456'}</span>
+                <span className="font-mono text-amber-300 font-bold">{userProfile?.mobile || 'Pending Link'}</span>
               </span>
               <span>•</span>
               <span>{userProfile?.location || 'Chennai, Tamil Nadu'}</span>
